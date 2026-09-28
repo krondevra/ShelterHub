@@ -21,6 +21,10 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://shelterhub:shelterhub@db:5432/shelterhub
+      # Local-development defaults. Override before deploying anywhere real.
+      SECRET_KEY: ${SECRET_KEY:-dev-only-insecure-secret-change-me-before-deploying}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
     ports:
       - "8000:8000"
     volumes:
