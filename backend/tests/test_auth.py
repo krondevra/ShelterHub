@@ -9,6 +9,10 @@ from app.models import Adopter, Staff, User
 
 from .conftest import account, register
 
+#: A Cyrillic letter: one character, two bytes in UTF-8. bcrypt's 72 limit is
+#: in bytes, so 36 of these fit and 37 do not.
+TWO_BYTE_CHAR = "п"
+
 
 # ---------------------------------------------------------------- register ---
 @pytest.mark.parametrize("role", ["adopter", "staff"])
@@ -61,13 +65,32 @@ def test_email_is_normalised_to_lowercase(client):
     [
         {"email": "not-an-email", "password": "password123", "role": "adopter"},
         {"email": "a@example.com", "password": "short", "role": "adopter"},
+        {"email": "a@example.com", "password": "p" * 73, "role": "adopter"},
+        {"email": "a@example.com", "password": TWO_BYTE_CHAR * 37, "role": "adopter"},
         {"email": "a@example.com", "password": "password123", "role": "administrator"},
         {"email": "a@example.com", "password": "password123"},
     ],
-    ids=["bad-email", "short-password", "unknown-role", "missing-role"],
+    ids=[
+        "bad-email",
+        "short-password",
+        "password-over-72-chars",
+        "password-over-72-bytes",
+        "unknown-role",
+        "missing-role",
+    ],
 )
 def test_invalid_registration_payloads_are_rejected(client, payload):
     assert client.post("/auth/register", json=payload).status_code == 422
+
+
+def test_a_non_ascii_password_works_up_to_72_bytes(client):
+    password = TWO_BYTE_CHAR * 36
+
+    assert register(client, "a@example.com", "adopter", password).status_code == 201
+    response = client.post(
+        "/auth/login", json={"email": "a@example.com", "password": password}
+    )
+    assert response.status_code == 200
 
 
 # ------------------------------------------------------------------- login ---

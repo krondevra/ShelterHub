@@ -129,8 +129,10 @@ constraints. Added:
 
 - **email** — validated as a real address (`EmailStr`) and lower-cased before
   storing and before lookup, so `Alice@x.com` and `alice@x.com` are one account.
-- **password** — 8–72 characters. The upper bound is bcrypt's: it silently
-  ignores anything past 72 bytes, so it is rejected instead.
+- **password** — 8–72 characters, and at most 72 bytes once UTF-8 encoded.
+  The upper bound is bcrypt's and is counted in bytes, so the two only differ
+  for non-ASCII passwords: 40 Cyrillic letters are 80 bytes and are rejected
+  (`422`).
 - **age** — `>= 0`, enforced both in Pydantic and by a database `CHECK`.
 - **name / species / breed** — non-empty, with column-width maximums.
 - **PATCH bodies** — unknown fields are rejected (`422`); on

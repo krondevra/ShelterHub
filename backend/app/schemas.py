@@ -10,13 +10,15 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from .models import AnimalStatus, ApplicationStatus, UserRole
 
-# bcrypt hashes at most 72 bytes; anything longer is silently ignored, so it is
-# rejected up front instead.
-Password = Field(min_length=8, max_length=72)
+# bcrypt cannot hash more than 72 *bytes*, so anything longer is rejected up
+# front. `max_length` counts characters, which is the same thing for ASCII;
+# `RegisterRequest` checks the encoded size to cover everything else.
+MAX_PASSWORD_BYTES = 72
+Password = Field(min_length=8, max_length=MAX_PASSWORD_BYTES)
 
 
 # --------------------------------------------------------------------- auth ---
@@ -26,6 +28,16 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Password
     role: UserRole
+
+    @field_validator("password")
+    @classmethod
+    def _password_fits_bcrypt(cls, value: str) -> str:
+        if len(value.encode("utf-8")) > MAX_PASSWORD_BYTES:
+            raise ValueError(
+                f"Password must be at most {MAX_PASSWORD_BYTES} bytes long "
+                "(non-ASCII characters take more than one)"
+            )
+        return value
 
 
 class LoginRequest(BaseModel):
