@@ -65,6 +65,11 @@ class TokenOut(BaseModel):
 
 
 # ------------------------------------------------------------------ animals ---
+# Largest value PostgreSQL's INTEGER column holds. SQLite stores bigger numbers
+# without complaint, so only the real database would refuse an oversized age.
+MAX_INT32 = 2**31 - 1
+
+
 class AnimalCreate(BaseModel):
     """Body of ``POST /animals``. ``status`` is not accepted: it defaults to
     ``available`` per the contract."""
@@ -72,7 +77,7 @@ class AnimalCreate(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     species: str = Field(min_length=1, max_length=80)
     breed: str = Field(min_length=1, max_length=120)
-    age: int = Field(ge=0)
+    age: int = Field(ge=0, le=MAX_INT32)
     shelter_id: int
 
 
@@ -93,7 +98,7 @@ class AnimalUpdate(BaseModel):
     name: str = Field(default=None, min_length=1, max_length=120)
     species: str = Field(default=None, min_length=1, max_length=80)
     breed: str = Field(default=None, min_length=1, max_length=120)
-    age: int = Field(default=None, ge=0)
+    age: int = Field(default=None, ge=0, le=MAX_INT32)
     shelter_id: int = Field(default=None)
 
 

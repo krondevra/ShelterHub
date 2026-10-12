@@ -88,8 +88,14 @@ def test_creating_against_an_unknown_shelter_is_404(client, staff_headers):
 
 @pytest.mark.parametrize(
     "overrides",
-    [{"age": -1}, {"name": ""}, {"age": "three"}, {"species": None}],
-    ids=["negative-age", "blank-name", "non-numeric-age", "null-species"],
+    [{"age": -1}, {"age": 2**31}, {"name": ""}, {"age": "three"}, {"species": None}],
+    ids=[
+        "negative-age",
+        "oversized-age",
+        "blank-name",
+        "non-numeric-age",
+        "null-species",
+    ],
 )
 def test_invalid_create_payloads_are_rejected(
     client, staff_headers, shelter_id, overrides
@@ -215,8 +221,8 @@ def test_patching_to_an_unknown_shelter_is_404(client, staff_headers, animal_id)
 
 @pytest.mark.parametrize(
     "payload",
-    [{"age": -2}, {"unknown_field": 1}],
-    ids=["negative-age", "unknown-field"],
+    [{"age": -2}, {"age": 2**31}, {"unknown_field": 1}],
+    ids=["negative-age", "oversized-age", "unknown-field"],
 )
 def test_invalid_patch_payloads_are_rejected(client, staff_headers, animal_id, payload):
     response = client.patch(

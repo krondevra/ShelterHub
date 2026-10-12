@@ -133,7 +133,8 @@ constraints. Added:
   The upper bound is bcrypt's and is counted in bytes, so the two only differ
   for non-ASCII passwords: 40 Cyrillic letters are 80 bytes and are rejected
   (`422`).
-- **age** — `>= 0`, enforced both in Pydantic and by a database `CHECK`.
+- **age** — `>= 0`, enforced both in Pydantic and by a database `CHECK`, and
+  at most 2147483647, the largest value the `INTEGER` column holds.
 - **name / species / breed** — non-empty, with column-width maximums.
 - **PATCH bodies** — unknown fields are rejected (`422`); on
   `PATCH /animals/{id}` that includes `status`
