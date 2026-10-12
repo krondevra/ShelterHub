@@ -135,8 +135,9 @@ constraints. Added:
 - **name / species / breed** — non-empty, with column-width maximums.
 - **PATCH bodies** — unknown fields are rejected (`422`); on
   `PATCH /animals/{id}` that includes `status`
-  (see [8](#8-patch-animalsid-does-not-accept-status)). An empty `{}` patch is
-  a no-op that returns `200` with the unchanged object.
+  (see [8](#8-patch-animalsid-does-not-accept-status)). A field is either sent
+  with a value or left out: an explicit `null` is a `422` as well. An empty
+  `{}` patch is a no-op that returns `200` with the unchanged object.
 
 ---
 

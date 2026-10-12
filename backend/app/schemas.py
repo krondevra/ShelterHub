@@ -69,15 +69,20 @@ class AnimalUpdate(BaseModel):
 
     ``status`` is deliberately absent: it is driven only by the application
     flow, and ``extra="forbid"`` turns an attempt to send it into a ``422``.
+
+    Every field is typed non-nullable and merely *defaults* to ``None``, which
+    pydantic does not validate. Leaving a field out therefore keeps its current
+    value, while an explicit ``null`` is a ``422`` instead of a write to a
+    NOT NULL column.
     """
 
     model_config = ConfigDict(extra="forbid")
 
-    name: str | None = Field(default=None, min_length=1, max_length=120)
-    species: str | None = Field(default=None, min_length=1, max_length=80)
-    breed: str | None = Field(default=None, min_length=1, max_length=120)
-    age: int | None = Field(default=None, ge=0)
-    shelter_id: int | None = None
+    name: str = Field(default=None, min_length=1, max_length=120)
+    species: str = Field(default=None, min_length=1, max_length=80)
+    breed: str = Field(default=None, min_length=1, max_length=120)
+    age: int = Field(default=None, ge=0)
+    shelter_id: int = Field(default=None)
 
 
 class AnimalOut(BaseModel):

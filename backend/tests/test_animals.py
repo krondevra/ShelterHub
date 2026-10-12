@@ -172,6 +172,18 @@ def test_a_patch_containing_status_changes_nothing(client, staff_headers, animal
     assert client.get(f"/animals/{animal_id}").json() == before
 
 
+@pytest.mark.parametrize("field", ["name", "species", "breed", "age", "shelter_id"])
+def test_a_field_cannot_be_patched_to_null(client, staff_headers, animal_id, field):
+    """A field is either sent with a value or left out; `null` is an invalid body."""
+    before = client.get(f"/animals/{animal_id}").json()
+    response = client.patch(
+        f"/animals/{animal_id}", json={field: None}, headers=staff_headers
+    )
+
+    assert response.status_code == 422
+    assert client.get(f"/animals/{animal_id}").json() == before
+
+
 def test_empty_patch_leaves_the_animal_unchanged(client, staff_headers, animal_id):
     before = client.get(f"/animals/{animal_id}").json()
     response = client.patch(f"/animals/{animal_id}", json={}, headers=staff_headers)
