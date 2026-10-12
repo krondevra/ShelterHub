@@ -1,8 +1,8 @@
 """Adoption application routes.
 
-Implements the status flow ``available -> pending -> adopted`` described in
-docs/UML_MODELS.md. The transitions that the original contract leaves
-unspecified are listed in docs/BACKEND_DECISIONS.md.
+Implements the status flow ``available -> pending -> adopted`` defined in
+docs/API_CONTRACT.md and drawn in docs/UML_MODELS.md. The reasoning behind
+each transition is in docs/BACKEND_DECISIONS.md.
 """
 
 from __future__ import annotations

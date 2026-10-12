@@ -1,7 +1,7 @@
 """Read-only shelter listing.
 
-Not in the original contract -- added so the frontend can offer a shelter
-picker when creating an animal. See docs/BACKEND_DECISIONS.md.
+Added so the frontend can offer a shelter picker when creating an animal, and
+since accepted into the contract. See docs/BACKEND_DECISIONS.md.
 """
 
 from __future__ import annotations

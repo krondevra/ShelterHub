@@ -131,8 +131,8 @@ stateDiagram-v2
     pending --> adopted : staff approve an application
     pending --> available : last open application rejected
     note right of adopted
-        Staff may also set any status
-        directly via PATCH /animals/{id}
+        Status changes only through applications
+        PATCH /animals/{id} cannot set it
     end note
 ```
 
@@ -145,6 +145,6 @@ stateDiagram-v2
     pending --> rejected : a competing application was approved
 ```
 
-Transitions marked on the animal diagram that are **not** spelled out in
-[API_CONTRACT.md](API_CONTRACT.md) are recorded in
+Every transition on both diagrams is spelled out in
+[API_CONTRACT.md](API_CONTRACT.md); the reasoning behind them is recorded in
 [BACKEND_DECISIONS.md](BACKEND_DECISIONS.md).

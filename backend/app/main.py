@@ -25,9 +25,11 @@ CORS_ORIGINS = [
 async def lifespan(app: FastAPI):
     """Create tables and seed demo shelters on startup.
 
-    The project has no migration tool, so the schema is created from the
-    model metadata. Swap this for Alembic if the schema starts changing.
+    The project has no migration tool yet, so the schema is created from the
+    model metadata.
     """
+    # TODO: DevOps will replace create_all() and seed_shelters() with Alembic
+    # migrations and a standalone seed script. Both stay here until then.
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as db:
         seed_shelters(db)

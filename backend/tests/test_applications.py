@@ -6,6 +6,8 @@ from datetime import datetime
 
 import pytest
 
+from app.models import Animal, AnimalStatus
+
 from .conftest import account
 
 CONTRACT_FIELDS = {"id", "adopter_id", "animal_id", "status", "created_at"}
@@ -84,10 +86,13 @@ def test_a_second_adopter_may_compete_for_a_pending_animal(
 
 
 def test_nobody_can_apply_for_an_adopted_animal(
-    client, staff_headers, other_adopter_headers, animal_id
+    client, staff_headers, adopter_headers, other_adopter_headers, animal_id
 ):
+    application = apply_for(client, animal_id, adopter_headers).json()
     client.patch(
-        f"/animals/{animal_id}", json={"status": "adopted"}, headers=staff_headers
+        f"/applications/{application['id']}",
+        json={"status": "approved"},
+        headers=staff_headers,
     )
     response = apply_for(client, animal_id, other_adopter_headers)
 
@@ -191,12 +196,13 @@ def test_rejecting_one_of_two_leaves_the_animal_pending(
 
 
 def test_rejecting_never_un_adopts_an_animal(
-    client, staff_headers, adopter_headers, animal_id
+    client, db, staff_headers, adopter_headers, animal_id
 ):
+    """An adopted animal with an open application cannot arise through the API
+    (approving closes the competing ones), so that state is set up directly."""
     application = apply_for(client, animal_id, adopter_headers).json()
-    client.patch(
-        f"/animals/{animal_id}", json={"status": "adopted"}, headers=staff_headers
-    )
+    db.get(Animal, animal_id).status = AnimalStatus.ADOPTED
+    db.commit()
 
     client.patch(
         f"/applications/{application['id']}",

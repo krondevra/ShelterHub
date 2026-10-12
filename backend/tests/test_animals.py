@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import pytest
 
+from app.models import Shelter
+
 CONTRACT_FIELDS = {"id", "name", "species", "breed", "age", "status", "shelter_id"}
 
 
@@ -126,13 +128,48 @@ def test_staff_can_patch_a_subset_of_fields(client, staff_headers, animal_id):
     assert body["name"] == "Rex"  # untouched
 
 
-def test_staff_can_patch_the_status_directly(client, staff_headers, animal_id):
+def test_every_contracted_field_can_be_patched(client, db, staff_headers, animal_id):
+    other_shelter = Shelter(name="Other Shelter", city="Tallinn")
+    db.add(other_shelter)
+    db.commit()
+    payload = {
+        "name": "Max",
+        "species": "cat",
+        "breed": "siamese",
+        "age": 7,
+        "shelter_id": other_shelter.id,
+    }
+
     response = client.patch(
-        f"/animals/{animal_id}", json={"status": "adopted"}, headers=staff_headers
+        f"/animals/{animal_id}", json=payload, headers=staff_headers
     )
 
     assert response.status_code == 200
-    assert response.json()["status"] == "adopted"
+    assert response.json() == payload | {"id": animal_id, "status": "available"}
+
+
+@pytest.mark.parametrize("status", ["available", "pending", "adopted", "sold"])
+def test_status_cannot_be_patched(client, staff_headers, animal_id, status):
+    """`status` is driven only by the application flow, so even a valid value
+    is refused."""
+    response = client.patch(
+        f"/animals/{animal_id}", json={"status": status}, headers=staff_headers
+    )
+
+    assert response.status_code == 422
+    assert client.get(f"/animals/{animal_id}").json()["status"] == "available"
+
+
+def test_a_patch_containing_status_changes_nothing(client, staff_headers, animal_id):
+    before = client.get(f"/animals/{animal_id}").json()
+    response = client.patch(
+        f"/animals/{animal_id}",
+        json={"age": 9, "status": "adopted"},
+        headers=staff_headers,
+    )
+
+    assert response.status_code == 422
+    assert client.get(f"/animals/{animal_id}").json() == before
 
 
 def test_empty_patch_leaves_the_animal_unchanged(client, staff_headers, animal_id):
@@ -166,8 +203,8 @@ def test_patching_to_an_unknown_shelter_is_404(client, staff_headers, animal_id)
 
 @pytest.mark.parametrize(
     "payload",
-    [{"status": "sold"}, {"age": -2}, {"unknown_field": 1}],
-    ids=["bad-status", "negative-age", "unknown-field"],
+    [{"age": -2}, {"unknown_field": 1}],
+    ids=["negative-age", "unknown-field"],
 )
 def test_invalid_patch_payloads_are_rejected(client, staff_headers, animal_id, payload):
     response = client.patch(

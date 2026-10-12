@@ -5,8 +5,7 @@ from __future__ import annotations
 from app.models import Shelter
 from app.seed import DEMO_SHELTERS, seed_shelters
 
-#: Every route the contract defines, plus the two documented additions
-#: (``GET /shelters`` and the pre-existing ``/health``).
+#: Every route the contract defines, plus the pre-existing ``/health``.
 EXPECTED_ROUTES = {
     "/auth/register": {"post"},
     "/auth/login": {"post"},

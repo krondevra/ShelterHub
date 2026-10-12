@@ -65,7 +65,11 @@ class AnimalCreate(BaseModel):
 
 
 class AnimalUpdate(BaseModel):
-    """Body of ``PATCH /animals/{id}`` -- any subset of the mutable fields."""
+    """Body of ``PATCH /animals/{id}`` -- any subset of the fields below.
+
+    ``status`` is deliberately absent: it is driven only by the application
+    flow, and ``extra="forbid"`` turns an attempt to send it into a ``422``.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -73,7 +77,6 @@ class AnimalUpdate(BaseModel):
     species: str | None = Field(default=None, min_length=1, max_length=80)
     breed: str | None = Field(default=None, min_length=1, max_length=120)
     age: int | None = Field(default=None, ge=0)
-    status: AnimalStatus | None = None
     shelter_id: int | None = None
 
 
@@ -124,10 +127,7 @@ class ApplicationOut(BaseModel):
 
 # ----------------------------------------------------------------- shelters ---
 class ShelterOut(BaseModel):
-    """``200`` response of ``GET /shelters``.
-
-    Not part of the original contract -- see docs/BACKEND_DECISIONS.md.
-    """
+    """``200`` response of ``GET /shelters``."""
 
     model_config = ConfigDict(from_attributes=True)
 

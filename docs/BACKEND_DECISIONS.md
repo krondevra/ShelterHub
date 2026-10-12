@@ -5,10 +5,13 @@ specify. The contract stays the source of truth — this file records the gaps t
 had to be filled to make it runnable, so the team can accept, reject, or fold
 them into the contract.
 
-> **Needs team sign-off before the contract is updated:** items
-> [1](#1-get-shelters), [2](#2-an-application-moves-its-animal-to-pending) and
-> [3](#3-who-may-apply-for-which-animal). Everything else is an implementation
-> detail that does not change the documented request/response shapes.
+> **Accepted into the contract:** items [1](#1-get-shelters),
+> [2](#2-an-application-moves-its-animal-to-pending) and
+> [3](#3-who-may-apply-for-which-animal) were signed off by the team and are
+> now part of [API_CONTRACT.md](API_CONTRACT.md). Rules 4–7, the password
+> length and the main status codes were written into the contract at the same
+> time. They are kept here for the reasoning behind them; wherever the two
+> documents overlap, the contract wins.
 
 ---
 
@@ -16,9 +19,11 @@ them into the contract.
 
 ### 1. `GET /shelters`
 
+*Accepted into the contract.*
+
 **Added** — public, read-only, returns `[{ "id": int, "name": str, "city": str | null }]`.
 
-The contract defines no endpoint that creates *or* lists shelters, yet
+The original contract defined no endpoint that creates *or* lists shelters, yet
 `POST /animals` requires a `shelter_id`. Without this, the frontend has no way
 to discover a valid shelter id. Three demo shelters are seeded on startup
 (see [13](#13-schema-creation-and-seeding)).
@@ -31,17 +36,23 @@ than the team agreed to.
 
 ## Status flow
 
-The contract only states that approving an application sets
-`Animal.status = "adopted"`. The rest of the `available -> pending -> adopted`
-lifecycle is defined here.
+The original contract only stated that approving an application sets
+`Animal.status = "adopted"`; the rest of the `available -> pending -> adopted`
+lifecycle was defined here first. The contract now spells out rules 2–7, and
+rule 8 follows from the same decision: an animal's status changes only through
+applications.
 
 ### 2. An application moves its animal to `pending`
+
+*Accepted into the contract.*
 
 `POST /applications` sets the animal's status to `pending` if it was
 `available`. Without this rule the `"pending"` animal status in the contract is
 unreachable and the three-state flow is really a two-state one.
 
 ### 3. Who may apply for which animal
+
+*Accepted into the contract.*
 
 | Animal status | New application? |
 |---|---|
@@ -81,19 +92,23 @@ that is already `adopted` is never reverted.
 **409**. The schema also refuses `{"status": "pending"}`, so an application
 cannot be reopened.
 
-### 8. `PATCH /animals/{id}` accepts `status`
+### 8. `PATCH /animals/{id}` does not accept `status`
 
-The contract says "partial fields to update" without listing them. The patchable
-set is `name`, `species`, `breed`, `age`, `status`, `shelter_id` — i.e. every
-mutable field. This is the escape hatch staff use to correct a status by hand.
-`status` sent to `POST /animals` is ignored: the contract fixes the initial
-value at `"available"`.
+The contract lists the patchable fields: `name`, `species`, `breed`, `age` and
+`shelter_id`. `status` is not among them. It is driven only by the application
+flow (rules 2, 3, 5 and 6), so the status shown for an animal can never
+disagree with its applications. Sending `status` is a **422**, like any other
+field the endpoint does not know (see [Validation](#validation)).
+
+`status` sent to `POST /animals` is ignored rather than rejected: the contract
+fixes the initial value at `"available"`.
 
 ---
 
 ## Status codes
 
-The contract fixes the error *body* (`{"detail": str}`) but not the codes.
+The contract fixes the error *body* (`{"detail": str}`) and now lists the codes
+too. This table records the exact cases behind them.
 
 | Situation | Code |
 |---|---|
@@ -109,7 +124,8 @@ The contract fixes the error *body* (`{"detail": str}`) but not the codes.
 
 ## Validation
 
-The contract types fields but states no constraints. Added:
+The contract types fields and, apart from the password length, states no
+constraints. Added:
 
 - **email** — validated as a real address (`EmailStr`) and lower-cased before
   storing and before lookup, so `Alice@x.com` and `alice@x.com` are one account.
@@ -117,7 +133,9 @@ The contract types fields but states no constraints. Added:
   ignores anything past 72 bytes, so it is rejected instead.
 - **age** — `>= 0`, enforced both in Pydantic and by a database `CHECK`.
 - **name / species / breed** — non-empty, with column-width maximums.
-- **PATCH bodies** — unknown fields are rejected (`422`). An empty `{}` patch is
+- **PATCH bodies** — unknown fields are rejected (`422`); on
+  `PATCH /animals/{id}` that includes `status`
+  (see [8](#8-patch-animalsid-does-not-accept-status)). An empty `{}` patch is
   a no-op that returns `200` with the unchanged object.
 
 ---
@@ -155,6 +173,9 @@ tool. **If the models change after the database exists, the schema will not
 update**; drop the `pgdata` volume or add Alembic. Three demo shelters are
 inserted on startup when the `shelters` table is empty.
 
+Both are temporary. Alembic migrations and a standalone seed script are planned
+(owned by DevOps) and will replace this startup hook.
+
 ### 14. CORS
 
 Enabled for `http://localhost:5173` and `http://127.0.0.1:5173`, overridable via
@@ -187,3 +208,8 @@ Not bugs — consequences of the contract as written. Flagged for the team.
 4. **No pagination.** `GET /animals` and `GET /applications` return everything.
 5. **No `GET /auth/me`.** The frontend must decode the JWT or remember the
    register response to know the current user's role.
+6. **No manual status correction.** `PATCH /animals/{id}` does not accept
+   `status` and a decision on an application is final, so an approval made by
+   mistake cannot be undone through the API, and an animal that leaves the
+   shelter outside the application flow cannot be marked `adopted` without an
+   application.
