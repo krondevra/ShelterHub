@@ -62,5 +62,7 @@ Response 200: updated Application object
 
 ## Errors
 { "detail": str }   — standard FastAPI error format, used for 4xx/5xx responses
+422 is the exception: "detail" is a list of validation errors,
+{ "detail": [ { "loc": [str | int], "msg": str, "type": str } ] }
 401 missing/invalid/expired token · 403 wrong role · 404 unknown id ·
 409 conflict (see above) · 422 invalid body
