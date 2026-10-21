@@ -5,7 +5,7 @@ Routes with no role noted are public.
 
 ## Auth
 POST /auth/register
-Body: { "email": str, "password": str (8-72 chars), "role": "adopter" | "staff" }
+Body: { "email": str, "password": str (8-72 chars, max 72 bytes UTF-8), "role": "adopter" | "staff" }
 Response 201: { "id": int, "email": str, "role": str }
 409 if the email is already registered
 
