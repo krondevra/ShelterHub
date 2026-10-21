@@ -1,6 +1,16 @@
-fastapi==0.115.0
-uvicorn[standard]==0.30.6
-sqlalchemy==2.0.35
-psycopg2-binary==2.9.9
-python-dotenv==1.0.1
-pydantic==2.9.2
+# --- runtime ---
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+sqlalchemy==2.0.54
+psycopg2-binary==2.9.13
+python-dotenv==1.2.3
+pydantic==2.13.5
+email-validator==2.3.0      # backs pydantic's EmailStr
+
+# --- auth ---
+pyjwt==2.14.0
+bcrypt==5.0.0
+
+# --- tests (kept here so `docker compose exec backend pytest` just works) ---
+pytest==9.1.1
+httpx==0.28.1
