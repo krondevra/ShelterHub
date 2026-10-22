@@ -72,6 +72,16 @@ describe('AnimalCard', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
     expect(screen.getByText('🐶')).toBeInTheDocument();
   });
+
+  it('tries again when a failed photo is replaced by a new one', () => {
+    const { rerender } = render(<AnimalCard animal={{ ...animal, photo_url: '/uploads/animals/1-old.jpg' }} />);
+    fireEvent.error(screen.getByRole('img', { name: 'Photo of Rex' }));
+
+    rerender(<AnimalCard animal={{ ...animal, photo_url: '/uploads/animals/1-new.jpg' }} />);
+
+    const img = screen.getByRole('img', { name: 'Photo of Rex' });
+    expect(img.src).toBe('http://localhost:8000/uploads/animals/1-new.jpg');
+  });
 });
 
 describe('formatAge', () => {

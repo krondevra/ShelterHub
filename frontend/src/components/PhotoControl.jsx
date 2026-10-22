@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { BASE_URL } from '../api/client';
 import { useDeleteAnimalPhoto, useUploadAnimalPhoto } from '../hooks/useAnimals';
 import { validatePhotoFile } from '../validation/photoValidation';
@@ -14,6 +14,13 @@ export function PhotoControl({ animalId, photoUrl, onChange }) {
   const [validationError, setValidationError] = useState(null);
   const upload = useUploadAnimalPhoto();
   const remove = useDeleteAnimalPhoto();
+
+  // Each preview is a blob: URL that holds the file in memory until revoked.
+  // Runs when the preview is replaced or cleared, and on unmount.
+  useEffect(() => {
+    if (!previewUrl) return undefined;
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
   function resetPicker() {
     setPendingFile(null);
