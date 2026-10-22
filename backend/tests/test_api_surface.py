@@ -11,6 +11,7 @@ EXPECTED_ROUTES = {
     "/auth/login": {"post"},
     "/animals": {"get", "post"},
     "/animals/{animal_id}": {"get", "patch"},
+    "/animals/{animal_id}/photo": {"post", "delete"},
     "/applications": {"post", "get"},
     "/applications/{application_id}": {"patch"},
     "/shelters": {"get"},

@@ -1,8 +1,9 @@
-"""Animal routes -- ``GET/POST /animals`` and ``GET/PATCH /animals/{id}``."""
+"""Animal routes -- ``GET/POST /animals``, ``GET/PATCH /animals/{id}`` and
+``POST/DELETE /animals/{id}/photo``."""
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -10,6 +11,7 @@ from ..database import get_db
 from ..models import Animal, Shelter, Staff
 from ..schemas import AnimalCreate, AnimalOut, AnimalUpdate
 from ..security import require_staff
+from ..uploads import delete_animal_photo, save_animal_photo
 
 router = APIRouter(prefix="/animals", tags=["animals"])
 
@@ -78,5 +80,48 @@ def update_animal(
         setattr(animal, field, value)
 
     db.commit()
+    db.refresh(animal)
+    return animal
+
+
+@router.post("/{animal_id}/photo", response_model=AnimalOut)
+def upload_animal_photo(
+    animal_id: int,
+    file: UploadFile,
+    db: Session = Depends(get_db),
+    _staff: Staff = Depends(require_staff),
+) -> Animal:
+    """Store a JPEG/PNG/WebP photo (max 5 MB), replacing any previous one."""
+    animal = _get_animal_or_404(db, animal_id)
+    new_file = save_animal_photo(animal.id, file)
+    old_file = animal.photo_path
+
+    animal.photo_path = new_file
+    try:
+        db.commit()
+    except Exception:
+        delete_animal_photo(new_file)
+        raise
+    # Only after the commit, so a failed save never leaves the animal pointing
+    # at a deleted file.
+    if old_file != new_file:
+        delete_animal_photo(old_file)
+    db.refresh(animal)
+    return animal
+
+
+@router.delete("/{animal_id}/photo", response_model=AnimalOut)
+def remove_animal_photo(
+    animal_id: int,
+    db: Session = Depends(get_db),
+    _staff: Staff = Depends(require_staff),
+) -> Animal:
+    """Remove the photo. Not an error if the animal has none."""
+    animal = _get_animal_or_404(db, animal_id)
+    old_file = animal.photo_path
+
+    animal.photo_path = None
+    db.commit()
+    delete_animal_photo(old_file)
     db.refresh(animal)
     return animal

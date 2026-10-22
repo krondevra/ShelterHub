@@ -71,8 +71,11 @@ MAX_INT32 = 2**31 - 1
 
 
 class AnimalCreate(BaseModel):
-    """Body of ``POST /animals``. ``status`` is not accepted: it defaults to
-    ``available`` per the contract."""
+    """Body of ``POST /animals``. ``status`` and ``photo_url`` are not
+    accepted: status defaults to ``available`` per the contract, and the photo
+    has its own route. ``extra="forbid"`` turns either into a ``422``."""
+
+    model_config = ConfigDict(extra="forbid")
 
     name: str = Field(min_length=1, max_length=120)
     species: str = Field(min_length=1, max_length=80)
@@ -114,6 +117,7 @@ class AnimalOut(BaseModel):
     age: int
     status: AnimalStatus
     shelter_id: int
+    photo_url: str | None
 
 
 # ------------------------------------------------------------- applications ---

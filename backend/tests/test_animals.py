@@ -6,7 +6,7 @@ import pytest
 
 from app.models import Shelter
 
-CONTRACT_FIELDS = {"id", "name", "species", "breed", "age", "status", "shelter_id"}
+CONTRACT_FIELDS = {"id", "name", "species", "breed", "age", "status", "shelter_id", "photo_url"}
 
 
 def new_animal_payload(shelter_id: int, **overrides) -> dict:
@@ -48,6 +48,7 @@ def test_get_single_animal(client, animal_id, shelter_id):
         "age": 3,
         "status": "available",
         "shelter_id": shelter_id,
+        "photo_url": None,
     }
 
 
@@ -109,15 +110,16 @@ def test_invalid_create_payloads_are_rejected(
 
 
 def test_status_cannot_be_forced_at_creation(client, staff_headers, shelter_id):
-    """`status` is not part of the POST contract, so it must be ignored."""
+    """`status` is not part of the POST contract, so sending it is a 422 --
+    the same as for PATCH -- rather than being silently ignored."""
     response = client.post(
         "/animals",
         json=new_animal_payload(shelter_id) | {"status": "adopted"},
         headers=staff_headers,
     )
 
-    assert response.status_code == 201
-    assert response.json()["status"] == "available"
+    assert response.status_code == 422
+    assert client.get("/animals").json() == []
 
 
 # ------------------------------------------------------------------ update ---
@@ -151,7 +153,7 @@ def test_every_contracted_field_can_be_patched(client, db, staff_headers, animal
     )
 
     assert response.status_code == 200
-    assert response.json() == payload | {"id": animal_id, "status": "available"}
+    assert response.json() == payload | {"id": animal_id, "status": "available", "photo_url": None}
 
 
 @pytest.mark.parametrize("status", ["available", "pending", "adopted", "sold"])
