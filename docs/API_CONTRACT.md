@@ -23,8 +23,11 @@ Response 200: [ { "id": int, "name": str, "city": str | null } ]
 GET /animals
 Response 200: [
   { "id": int, "name": str, "species": str, "breed": str, "age": int,
-    "status": "available" | "pending" | "adopted", "shelter_id": int }
+    "status": "available" | "pending" | "adopted", "shelter_id": int,
+    "photo_url": str | null }
 ]
+(photo_url is a path relative to the API base URL, e.g. "/uploads/animals/7.jpg",
+null when the animal has no photo)
 
 GET /animals/{id}
 Response 200: same object as above
@@ -37,6 +40,20 @@ PATCH /animals/{id}   (staff only)
 Body: any subset of { "name", "species", "breed", "age", "shelter_id" }
 Response 200: updated Animal object
 (status cannot be set here — it is driven only by the application flow below)
+(photo_url cannot be set on POST or PATCH either — 422; use the photo routes below)
+
+POST /animals/{id}/photo   (staff only)
+Body: multipart/form-data, one field "file" — JPEG, PNG or WebP, max 5 MB
+Response 200: updated Animal object (photo_url set)
+- uploading again replaces the previous photo
+- 404 unknown animal · 413 file over 5 MB · 415 not JPEG/PNG/WebP
+
+DELETE /animals/{id}/photo   (staff only)
+Response 200: updated Animal object (photo_url null)
+- 404 unknown animal (no error if the animal has no photo)
+
+GET /uploads/animals/{file}
+Serves the stored image file (public)
 
 ## Applications
 POST /applications   (adopter only)
@@ -65,4 +82,5 @@ Response 200: updated Application object
 422 is the exception: "detail" is a list of validation errors,
 { "detail": [ { "loc": [str | int], "msg": str, "type": str } ] }
 401 missing/invalid/expired token · 403 wrong role · 404 unknown id ·
-409 conflict (see above) · 422 invalid body
+409 conflict (see above) · 413 upload too large · 415 unsupported file type ·
+422 invalid body
