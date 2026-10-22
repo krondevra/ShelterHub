@@ -25,10 +25,14 @@ services:
       SECRET_KEY: ${SECRET_KEY:-dev-only-insecure-secret-change-me-before-deploying}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+      UPLOAD_DIR: /app/uploads
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      # Named volume on top of the bind mount: photos survive rebuilds and
+      # don't end up in the source folder.
+      - uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -48,3 +52,4 @@ services:
 
 volumes:
   pgdata:
+  uploads:
