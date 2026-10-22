@@ -13,10 +13,11 @@ const createApplicationRun = vi.fn();
 const refetchAnimals = vi.fn();
 const refetchMyApplications = vi.fn();
 let myApplications = [];
+let animalsState = { data: animals, loading: false, error: null };
 let authState = { isAuthenticated: false, user: null };
 
 vi.mock('../hooks/useAnimals', () => ({
-  useAnimals: () => ({ data: animals, loading: false, error: null, refetch: refetchAnimals }),
+  useAnimals: () => ({ ...animalsState, refetch: refetchAnimals }),
   useShelters: () => ({ data: [{ id: 1, name: 'Paws Haven', city: 'Riga' }], loading: false, error: null }),
 }));
 
@@ -47,6 +48,7 @@ describe('AnimalsPage', () => {
     vi.clearAllMocks();
     createApplicationRun.mockResolvedValue({});
     myApplications = [];
+    animalsState = { data: animals, loading: false, error: null };
     authState = { isAuthenticated: false, user: null };
   });
 
@@ -100,5 +102,33 @@ describe('AnimalsPage', () => {
     fireEvent.click(screen.getAllByRole('button', { name: 'Apply to adopt' })[0]);
 
     expect(await screen.findByText('You already have a pending application for this animal')).toBeInTheDocument();
+  });
+
+  it('shows "Application submitted" right after applying, before the applications refetch lands', async () => {
+    authState = { isAuthenticated: true, user: { id: '1', role: 'adopter' } };
+    renderPage();
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Apply to adopt' })[0]);
+
+    expect(await screen.findByText('Application submitted')).toBeInTheDocument();
+    // myApplications is still empty here, so only Mia keeps her Apply button.
+    expect(screen.getAllByRole('button', { name: 'Apply to adopt' })).toHaveLength(1);
+  });
+
+  it('keeps the animal list on screen when a refetch fails', () => {
+    animalsState = { data: animals, loading: false, error: 'Could not reach the server.' };
+    renderPage();
+
+    expect(screen.getByText(/Could not load animals/)).toBeInTheDocument();
+    expect(screen.getByText('Rex')).toBeInTheDocument();
+    expect(screen.getAllByTestId('animal-card')).toHaveLength(3);
+  });
+
+  it('shows only the error when the first load fails', () => {
+    animalsState = { data: null, loading: false, error: 'Could not reach the server.' };
+    renderPage();
+
+    expect(screen.getByText(/Could not load animals/)).toBeInTheDocument();
+    expect(screen.queryAllByTestId('animal-card')).toHaveLength(0);
   });
 });

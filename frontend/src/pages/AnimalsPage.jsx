@@ -14,7 +14,7 @@ export function AnimalsPage() {
   const isAdopter = isAuthenticated && user.role === 'adopter';
   const { data: myApplications, refetch: refetchMyApplications } = useApplications({ skip: !isAdopter });
   const createApplication = useCreateApplication();
-  const [cardState, setCardState] = useState({}); // { [animalId]: { error?: string } }
+  const [cardState, setCardState] = useState({}); // { [animalId]: { applied?: bool, error?: string } }
 
   // Survives a reload: an animal with a pending application from this adopter
   // shows "Application submitted" even before `cardState` has anything in it.
@@ -30,6 +30,9 @@ export function AnimalsPage() {
     setCardState((s) => ({ ...s, [animalId]: {} }));
     try {
       await createApplication.run(animalId);
+      // Mark it right away: the applications refetch below takes a moment, and
+      // until it lands the Apply button would otherwise come back.
+      setCardState((s) => ({ ...s, [animalId]: { applied: true } }));
       refetch(); // animal status may have flipped to "pending"
       refetchMyApplications();
     } catch (e) {
@@ -48,7 +51,7 @@ export function AnimalsPage() {
         </p>
       </section>
 
-      {!loading && !error && !sheltersLoading && !sheltersError && (
+      {animals && !sheltersLoading && !sheltersError && (
         <ShelterOverview shelters={shelters} animals={animals} />
       )}
 
@@ -56,10 +59,9 @@ export function AnimalsPage() {
         <h2>Animals looking for a home</h2>
         {loading && <Spinner label="Loading animals…" />}
         {error && <p className="form-error">Could not load animals: {error}</p>}
-        {!loading && !error && animals.length === 0 && (
-          <p className="empty-state">No animals yet. Check back soon!</p>
-        )}
-        {!loading && !error && (
+        {animals && animals.length === 0 && <p className="empty-state">No animals yet. Check back soon!</p>}
+        {/* A failed refetch keeps the old list on screen, with the error above it. */}
+        {animals && (
           <div className="animal-grid">
             {animals.map((animal) => {
               const state = cardState[animal.id] ?? {};
@@ -68,7 +70,7 @@ export function AnimalsPage() {
               if (isAdopter) {
                 if (animal.status === 'adopted') {
                   action = <span className="muted">Already adopted</span>;
-                } else if (pendingAnimalIds.has(animal.id)) {
+                } else if (state.applied || pendingAnimalIds.has(animal.id)) {
                   action = <span className="muted">Application submitted</span>;
                 } else {
                   action = (
