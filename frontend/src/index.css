@@ -7,6 +7,7 @@
   --color-primary: #2f6f4f;
   --color-primary-hover: #255a40;
   --color-danger: #b3261e;
+  --color-danger-bg-hover: #fdecea;
   --status-available-bg: #e4f3e9;
   --status-available-fg: #1f7a43;
   --status-pending-bg: #fdf3dc;
@@ -17,6 +18,13 @@
   --status-approved-fg: #1f7a43;
   --status-rejected-bg: #fbe7e6;
   --status-rejected-fg: #b3261e;
+  --icon-bg-dog: #fdf0da;
+  --icon-bg-cat: #e6edfb;
+  --icon-bg-other: #eef0f2;
+  --role-staff-bg: #e6edfb;
+  --role-staff-fg: #2a4d8f;
+  --role-adopter-bg: #e4f3e9;
+  --role-adopter-fg: #1f7a43;
 }
 
 * {
@@ -39,14 +47,16 @@ a:hover {
   text-decoration: underline;
 }
 
+/* Buttons: one shared system everywhere. Plain, class-less buttons default
+   to the primary look so nothing is left unstyled by accident. */
 button {
   font: inherit;
   cursor: pointer;
+  border-radius: 6px;
+  padding: 0.45rem 0.9rem;
   border: 1px solid var(--color-primary);
   background: var(--color-primary);
   color: #fff;
-  border-radius: 6px;
-  padding: 0.45rem 0.9rem;
 }
 
 button:hover:not(:disabled) {
@@ -58,8 +68,24 @@ button:disabled {
   cursor: not-allowed;
 }
 
-button[type='button'].active {
-  background: var(--color-primary-hover);
+.btn-secondary {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-bg);
+}
+
+.btn-danger-outline {
+  background: var(--color-surface);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.btn-danger-outline:hover:not(:disabled) {
+  background: var(--color-danger-bg-hover);
 }
 
 /* App shell */
@@ -89,15 +115,46 @@ button[type='button'].active {
   flex: 1;
 }
 
+.app-nav-links a {
+  color: var(--color-muted);
+  padding-bottom: 0.2rem;
+  border-bottom: 2px solid transparent;
+}
+
+.app-nav-links a:hover {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.app-nav-links a.active {
+  color: var(--color-text);
+  font-weight: 600;
+  border-bottom-color: var(--color-primary);
+}
+
 .app-nav-auth {
   display: flex;
   align-items: center;
   gap: 0.9rem;
 }
 
-.app-user {
-  color: var(--color-muted);
+.role-badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
   text-transform: capitalize;
+}
+
+.role-badge-staff {
+  background: var(--role-staff-bg);
+  color: var(--role-staff-fg);
+}
+
+.role-badge-adopter {
+  background: var(--role-adopter-bg);
+  color: var(--role-adopter-fg);
 }
 
 .app-main {
@@ -106,26 +163,24 @@ button[type='button'].active {
   padding: 1.5rem;
 }
 
-/* Hero */
-.hero {
-  margin-bottom: 2rem;
-  max-width: 720px;
+/* Consistent rhythm between top-level sections of a page, instead of each
+   section declaring its own margin. */
+.app-main > * + * {
+  margin-top: 2rem;
 }
 
+/* Hero */
 .hero h1 {
-  margin-bottom: 0.5rem;
+  margin: 0 0 0.5rem;
 }
 
 .hero p {
+  max-width: 720px;
   color: var(--color-muted);
   line-height: 1.5;
 }
 
 /* Shelter overview */
-.shelter-overview {
-  margin-bottom: 2rem;
-}
-
 .shelter-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -167,10 +222,38 @@ button[type='button'].active {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.animal-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 96px;
+  background: var(--icon-bg-other);
+}
+
+.animal-visual-dog {
+  background: var(--icon-bg-dog);
+}
+
+.animal-visual-cat {
+  background: var(--icon-bg-cat);
+}
+
+.animal-visual-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.animal-card-body {
   padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  flex: 1;
 }
 
 .animal-card-header {
@@ -244,10 +327,16 @@ button[type='button'].active {
   color: var(--status-rejected-fg);
 }
 
-/* Forms */
+/* Forms: login, register and the animal form all live in a centered card. */
+.form-card,
 .auth-page,
 .animal-form {
   max-width: 420px;
+  margin: 0 auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 1.5rem;
 }
 
 form label {
@@ -282,15 +371,14 @@ form select {
   margin-top: 0.75rem;
 }
 
-.animal-form-actions button[type='button'] {
-  background: var(--color-surface);
-  color: var(--color-text);
-  border-color: var(--color-border);
+/* Tables */
+.table-scroll {
+  overflow-x: auto;
 }
 
-/* Tables */
 .applications-table {
   width: 100%;
+  min-width: 480px;
   border-collapse: collapse;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -312,12 +400,6 @@ form select {
 .row-actions {
   display: flex;
   gap: 0.5rem;
-}
-
-.row-actions button:last-child {
-  background: var(--color-surface);
-  color: var(--color-danger);
-  border-color: var(--color-danger);
 }
 
 .tabs {
@@ -342,6 +424,36 @@ form select {
   margin-bottom: 1rem;
 }
 
+/* Loading / empty states */
+.spinner-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--color-muted);
+  padding: 1rem 0;
+}
+
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.empty-state {
+  color: var(--color-muted);
+  padding: 1rem 0;
+}
+
 /* Desktop-first: collapse down for tablet/mobile */
 @media (max-width: 768px) {
   .app-nav {
@@ -357,10 +469,5 @@ form select {
 
   .animal-grid {
     grid-template-columns: 1fr;
-  }
-
-  .applications-table {
-    display: block;
-    overflow-x: auto;
   }
 }

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { AnimalForm } from '../components/AnimalForm';
+import { Spinner } from '../components/Spinner';
 import { useAnimals, useCreateAnimal, useShelters, useUpdateAnimal } from '../hooks/useAnimals';
 import { useApplications, useUpdateApplicationStatus } from '../hooks/useApplications';
 
@@ -55,56 +56,63 @@ export function ApplicationsTab() {
     }
   }
 
-  if (appsLoading || animalsLoading) return <p>Loading applications…</p>;
+  if (appsLoading || animalsLoading) return <Spinner label="Loading applications…" />;
   if (appsError) return <p className="form-error">Could not load applications: {appsError}</p>;
 
   return (
     <div>
-      {applications.length === 0 && <p>No applications yet.</p>}
+      {applications.length === 0 && <p className="empty-state">No applications yet. Check back soon!</p>}
       {applications.length > 0 && (
-        <table className="applications-table">
-          <thead>
-            <tr>
-              <th>Animal</th>
-              <th>Adopter</th>
-              <th>Status</th>
-              <th>Submitted</th>
-              <th>Decision</th>
-            </tr>
-          </thead>
-          <tbody>
-            {applications.map((application) => {
-              const animal = animalsById.get(application.animal_id);
-              const isPending = application.status === 'pending';
-              const isDeciding = decidingId === application.id;
-              return (
-                <tr key={application.id}>
-                  <td>{animal ? `${animal.name} (${animal.species})` : `#${application.animal_id}`}</td>
-                  <td>#{application.adopter_id}</td>
-                  <td>
-                    <span className={`status-badge status-${application.status}`}>{application.status}</span>
-                  </td>
-                  <td>{new Date(application.created_at).toLocaleDateString()}</td>
-                  <td>
-                    {isPending ? (
-                      <div className="row-actions">
-                        <button type="button" onClick={() => decide(application, 'approved')} disabled={isDeciding}>
-                          Approve
-                        </button>
-                        <button type="button" onClick={() => decide(application, 'rejected')} disabled={isDeciding}>
-                          Reject
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="muted">Decided</span>
-                    )}
-                    {rowErrors[application.id] && <p className="form-error">{rowErrors[application.id]}</p>}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div className="table-scroll">
+          <table className="applications-table">
+            <thead>
+              <tr>
+                <th>Animal</th>
+                <th>Adopter</th>
+                <th>Status</th>
+                <th>Submitted</th>
+                <th>Decision</th>
+              </tr>
+            </thead>
+            <tbody>
+              {applications.map((application) => {
+                const animal = animalsById.get(application.animal_id);
+                const isPending = application.status === 'pending';
+                const isDeciding = decidingId === application.id;
+                return (
+                  <tr key={application.id}>
+                    <td>{animal ? `${animal.name} (${animal.species})` : `#${application.animal_id}`}</td>
+                    <td>#{application.adopter_id}</td>
+                    <td>
+                      <span className={`status-badge status-${application.status}`}>{application.status}</span>
+                    </td>
+                    <td>{new Date(application.created_at).toLocaleDateString()}</td>
+                    <td>
+                      {isPending ? (
+                        <div className="row-actions">
+                          <button type="button" onClick={() => decide(application, 'approved')} disabled={isDeciding}>
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-danger-outline"
+                            onClick={() => decide(application, 'rejected')}
+                            disabled={isDeciding}
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="muted">Decided</span>
+                      )}
+                      {rowErrors[application.id] && <p className="form-error">{rowErrors[application.id]}</p>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
@@ -130,14 +138,14 @@ function AnimalsTab() {
     refetchAnimals();
   }
 
-  if (animalsLoading || sheltersLoading) return <p>Loading animals…</p>;
+  if (animalsLoading || sheltersLoading) return <Spinner label="Loading animals…" />;
   if (animalsError) return <p className="form-error">Could not load animals: {animalsError}</p>;
   if (sheltersError) return <p className="form-error">Could not load shelters: {sheltersError}</p>;
 
   return (
     <div>
       <div className="animals-tab-header">
-        <button type="button" onClick={() => setShowCreate((v) => !v)}>
+        <button type="button" className="btn-secondary" onClick={() => setShowCreate((v) => !v)}>
           {showCreate ? 'Cancel' : 'Add animal'}
         </button>
       </div>
@@ -145,52 +153,57 @@ function AnimalsTab() {
         <AnimalForm mode="create" shelters={shelters} onSubmit={handleCreate} onCancel={() => setShowCreate(false)} />
       )}
 
-      <table className="applications-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Species</th>
-            <th>Breed</th>
-            <th>Age</th>
-            <th>Status</th>
-            <th>Shelter</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {animals.map((animal) =>
-            editingId === animal.id ? (
-              <tr key={animal.id}>
-                <td colSpan={7}>
-                  <AnimalForm
-                    mode="edit"
-                    animal={animal}
-                    shelters={shelters}
-                    onSubmit={(patch) => handleUpdate(animal.id, patch)}
-                    onCancel={() => setEditingId(null)}
-                  />
-                </td>
+      {animals.length === 0 && !showCreate && <p className="empty-state">No animals yet. Add the first one above!</p>}
+      {animals.length > 0 && (
+        <div className="table-scroll">
+          <table className="applications-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Species</th>
+                <th>Breed</th>
+                <th>Age</th>
+                <th>Status</th>
+                <th>Shelter</th>
+                <th></th>
               </tr>
-            ) : (
-              <tr key={animal.id}>
-                <td>{animal.name}</td>
-                <td>{animal.species}</td>
-                <td>{animal.breed}</td>
-                <td>{animal.age}</td>
-                <td>
-                  <span className={`status-badge status-${animal.status}`}>{animal.status}</span>
-                </td>
-                <td>{shelters.find((s) => s.id === animal.shelter_id)?.name ?? animal.shelter_id}</td>
-                <td>
-                  <button type="button" onClick={() => setEditingId(animal.id)}>
-                    Edit
-                  </button>
-                </td>
-              </tr>
-            )
-          )}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {animals.map((animal) =>
+                editingId === animal.id ? (
+                  <tr key={animal.id}>
+                    <td colSpan={7}>
+                      <AnimalForm
+                        mode="edit"
+                        animal={animal}
+                        shelters={shelters}
+                        onSubmit={(patch) => handleUpdate(animal.id, patch)}
+                        onCancel={() => setEditingId(null)}
+                      />
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={animal.id}>
+                    <td>{animal.name}</td>
+                    <td>{animal.species}</td>
+                    <td>{animal.breed}</td>
+                    <td>{animal.age}</td>
+                    <td>
+                      <span className={`status-badge status-${animal.status}`}>{animal.status}</span>
+                    </td>
+                    <td>{shelters.find((s) => s.id === animal.shelter_id)?.name ?? animal.shelter_id}</td>
+                    <td>
+                      <button type="button" className="btn-secondary" onClick={() => setEditingId(animal.id)}>
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                )
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

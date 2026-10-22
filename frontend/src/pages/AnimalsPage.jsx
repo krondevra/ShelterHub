@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimalCard } from '../components/AnimalCard';
 import { ShelterOverview } from '../components/ShelterOverview';
+import { Spinner } from '../components/Spinner';
 import { useAnimals, useShelters } from '../hooks/useAnimals';
 import { useApplications, useCreateApplication } from '../hooks/useApplications';
 import { useAuth } from '../hooks/useAuth';
@@ -53,9 +54,11 @@ export function AnimalsPage() {
 
       <section>
         <h2>Animals looking for a home</h2>
-        {loading && <p>Loading animals…</p>}
+        {loading && <Spinner label="Loading animals…" />}
         {error && <p className="form-error">Could not load animals: {error}</p>}
-        {!loading && !error && animals.length === 0 && <p>No animals yet.</p>}
+        {!loading && !error && animals.length === 0 && (
+          <p className="empty-state">No animals yet. Check back soon!</p>
+        )}
         {!loading && !error && (
           <div className="animal-grid">
             {animals.map((animal) => {
