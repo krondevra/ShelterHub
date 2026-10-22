@@ -27,8 +27,10 @@ export function formatAge(age) {
 // component stays presentational and doesn't need to know about auth/applications.
 export function AnimalCard({ animal, action }) {
   const { emoji, category } = speciesVisual(animal.species);
-  const [photoFailed, setPhotoFailed] = useState(false);
-  const showPhoto = animal.photo_url && !photoFailed;
+  // Remember which URL failed, not just "failed": a new upload gets a new URL
+  // and should be tried again without a page reload.
+  const [failedUrl, setFailedUrl] = useState(null);
+  const showPhoto = animal.photo_url && animal.photo_url !== failedUrl;
 
   return (
     <article className="animal-card" data-testid="animal-card">
@@ -38,7 +40,7 @@ export function AnimalCard({ animal, action }) {
             src={`${BASE_URL}${animal.photo_url}`}
             alt={`Photo of ${animal.name}`}
             className="animal-visual-photo"
-            onError={() => setPhotoFailed(true)}
+            onError={() => setFailedUrl(animal.photo_url)}
           />
         ) : (
           <span className="animal-visual-icon" aria-hidden="true">
