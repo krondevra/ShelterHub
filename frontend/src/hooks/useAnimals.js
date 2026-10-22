@@ -40,3 +40,17 @@ export function useCreateAnimal() {
 export function useUpdateAnimal() {
   return useMutation((id, patch) => api.patch(`/animals/${id}`, patch));
 }
+
+// photo_url is never part of POST/PATCH /animals (422 if sent there, same as
+// status) -- it's managed only through these two endpoints.
+export function useUploadAnimalPhoto() {
+  return useMutation((id, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.upload(`/animals/${id}/photo`, formData);
+  });
+}
+
+export function useDeleteAnimalPhoto() {
+  return useMutation((id) => api.delete(`/animals/${id}/photo`));
+}

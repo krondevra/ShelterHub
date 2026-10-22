@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { BASE_URL } from '../api/client';
+
 const STATUS_LABELS = {
   available: 'Available',
   pending: 'Pending',
@@ -24,11 +27,24 @@ export function formatAge(age) {
 // component stays presentational and doesn't need to know about auth/applications.
 export function AnimalCard({ animal, action }) {
   const { emoji, category } = speciesVisual(animal.species);
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const showPhoto = animal.photo_url && !photoFailed;
 
   return (
     <article className="animal-card" data-testid="animal-card">
-      <div className={`animal-visual animal-visual-${category}`} aria-hidden="true">
-        <span className="animal-visual-icon">{emoji}</span>
+      <div className={`animal-visual animal-visual-${category}`}>
+        {showPhoto ? (
+          <img
+            src={`${BASE_URL}${animal.photo_url}`}
+            alt={`Photo of ${animal.name}`}
+            className="animal-visual-photo"
+            onError={() => setPhotoFailed(true)}
+          />
+        ) : (
+          <span className="animal-visual-icon" aria-hidden="true">
+            {emoji}
+          </span>
+        )}
       </div>
       <div className="animal-card-body">
         <div className="animal-card-header">

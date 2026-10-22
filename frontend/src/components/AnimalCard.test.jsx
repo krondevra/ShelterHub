@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { AnimalCard, formatAge } from './AnimalCard';
 
@@ -47,6 +47,30 @@ describe('AnimalCard', () => {
   ])('shows the %s species icon', (species, emoji) => {
     render(<AnimalCard animal={{ ...animal, species }} />);
     expect(screen.getByText(emoji)).toBeInTheDocument();
+  });
+
+  it('shows the species icon (not a photo) when photo_url is null', () => {
+    render(<AnimalCard animal={{ ...animal, photo_url: null }} />);
+    expect(screen.getByText('🐶')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  it('shows the photo instead of the icon when photo_url is set', () => {
+    render(<AnimalCard animal={{ ...animal, photo_url: '/uploads/animals/1.jpg' }} />);
+    const img = screen.getByRole('img', { name: 'Photo of Rex' });
+    expect(img).toBeInTheDocument();
+    expect(img.src).toBe('http://localhost:8000/uploads/animals/1.jpg');
+    expect(screen.queryByText('🐶')).not.toBeInTheDocument();
+  });
+
+  it('falls back to the species icon if the photo fails to load', () => {
+    render(<AnimalCard animal={{ ...animal, photo_url: '/uploads/animals/1.jpg' }} />);
+    const img = screen.getByRole('img', { name: 'Photo of Rex' });
+
+    fireEvent.error(img);
+
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    expect(screen.getByText('🐶')).toBeInTheDocument();
   });
 });
 
