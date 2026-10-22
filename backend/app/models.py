@@ -184,6 +184,8 @@ class Animal(Base):
     shelter_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("shelters.id"), nullable=False, index=True
     )
+    # File name under UPLOAD_DIR/animals (see app/uploads.py), NULL = no photo.
+    photo_path: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow, nullable=False
     )
@@ -196,6 +198,11 @@ class Animal(Base):
     @property
     def is_available(self) -> bool:
         return self.status is AnimalStatus.AVAILABLE
+
+    @property
+    def photo_url(self) -> str | None:
+        """Public path of the photo, served by the ``/uploads`` mount."""
+        return f"/uploads/animals/{self.photo_path}" if self.photo_path else None
 
     def open_applications(self) -> list[ShelterApplication]:
         """Applications still awaiting a staff decision."""

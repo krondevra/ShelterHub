@@ -7,10 +7,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from .database import Base, SessionLocal, engine
 from .routers import animals, applications, auth, shelters
 from .seed import seed_shelters
+from .uploads import UPLOAD_DIR, ensure_upload_dirs
 
 CORS_ORIGINS = [
     origin.strip()
@@ -50,6 +52,11 @@ app.include_router(auth.router)
 app.include_router(animals.router)
 app.include_router(applications.router)
 app.include_router(shelters.router)
+
+# Animal photos. Created here rather than in the lifespan because StaticFiles
+# checks that the directory exists as soon as it is constructed.
+ensure_upload_dirs()
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 
 @app.get("/health", tags=["meta"])

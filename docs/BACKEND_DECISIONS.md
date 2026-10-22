@@ -178,14 +178,30 @@ update**; drop the `pgdata` volume or add Alembic. Three demo shelters are
 inserted on startup when the `shelters` table is empty.
 
 Both are temporary. Alembic migrations and a standalone seed script are planned
-(owned by DevOps) and will replace this startup hook.
+(owned by DevOps) and will replace this startup hook. Existing databases
+need the new `animals.photo_path` column (see 15) until then.
 
 ### 14. CORS
 
 Enabled for `http://localhost:5173` and `http://127.0.0.1:5173`, overridable via
 `CORS_ORIGINS`. The browser will not let the frontend call the API without it.
 
-### 15. Dependency versions
+### 15. Animal photos
+
+`POST /animals/{id}/photo` stores the file on disk under `UPLOAD_DIR/animals`
+(`backend/uploads` by default, a named `uploads` volume in Docker); the
+database only keeps the file name in `animals.photo_path`. Files are saved
+under a new random name (`<animal id>-<uuid>.<ext>`), never the client's file
+name. The format is checked from the file's first bytes (JPEG, PNG, WebP
+signatures), not from the name or the client's Content-Type. The upload is
+read in chunks and refused with 413 as soon as it passes 5 MB. Replacing or
+deleting a photo removes the old file after the database commit.
+
+With this change `AnimalCreate` also forbids unknown fields, so sending
+`status` or `photo_url` to `POST /animals` is a 422 instead of being ignored,
+the same as for `PATCH`.
+
+### 16. Dependency versions
 
 Pins were raised so one set of versions works on both Python 3.12 (the Docker
 image) and 3.14 (local test runs). The original `pydantic==2.9.2` has no wheel
