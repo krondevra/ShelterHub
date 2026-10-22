@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { AnimalForm } from '../components/AnimalForm';
+import { PhotoControl } from '../components/PhotoControl';
 import { Spinner } from '../components/Spinner';
 import { useAnimals, useCreateAnimal, useShelters, useUpdateAnimal } from '../hooks/useAnimals';
 import { useApplications, useUpdateApplicationStatus } from '../hooks/useApplications';
@@ -159,6 +160,7 @@ function AnimalsTab() {
           <table className="applications-table">
             <thead>
               <tr>
+                <th>Photo</th>
                 <th>Name</th>
                 <th>Species</th>
                 <th>Breed</th>
@@ -172,7 +174,7 @@ function AnimalsTab() {
               {animals.map((animal) =>
                 editingId === animal.id ? (
                   <tr key={animal.id}>
-                    <td colSpan={7}>
+                    <td colSpan={8}>
                       <AnimalForm
                         mode="edit"
                         animal={animal}
@@ -184,6 +186,9 @@ function AnimalsTab() {
                   </tr>
                 ) : (
                   <tr key={animal.id}>
+                    <td>
+                      <PhotoControl animalId={animal.id} photoUrl={animal.photo_url} onChange={refetchAnimals} />
+                    </td>
                     <td>{animal.name}</td>
                     <td>{animal.species}</td>
                     <td>{animal.breed}</td>

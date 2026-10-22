@@ -1,4 +1,6 @@
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+// Exported so callers can build an absolute URL for a relative path the API
+// returns (e.g. an animal's photo_url).
+export const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 const TOKEN_KEY = 'shelterhub_token';
 
 // `window.localStorage`, not the bare global: Node 20.11+/22+ defines its own
@@ -32,8 +34,12 @@ function formatDetail(detail) {
 }
 
 export async function request(path, { method = 'GET', body, auth = true } = {}) {
+  // FormData (file uploads): let the browser set its own multipart boundary
+  // in Content-Type, and send the FormData as-is instead of JSON-encoding it.
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+
   const headers = {};
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  if (body !== undefined && !isFormData) headers['Content-Type'] = 'application/json';
   const token = tokenStorage.get();
   if (auth && token) headers.Authorization = `Bearer ${token}`;
 
@@ -42,7 +48,7 @@ export async function request(path, { method = 'GET', body, auth = true } = {}) 
     res = await fetch(`${BASE_URL}${path}`, {
       method,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body),
     });
   } catch {
     throw new ApiError(0, 'Could not reach the server. Is the backend running?');
@@ -62,4 +68,7 @@ export const api = {
   get: (path, opts) => request(path, { ...opts, method: 'GET' }),
   post: (path, body, opts) => request(path, { ...opts, method: 'POST', body }),
   patch: (path, body, opts) => request(path, { ...opts, method: 'PATCH', body }),
+  delete: (path, opts) => request(path, { ...opts, method: 'DELETE' }),
+  // `formData` must be a FormData instance; see the isFormData check in request().
+  upload: (path, formData, opts) => request(path, { ...opts, method: 'POST', body: formData }),
 };
