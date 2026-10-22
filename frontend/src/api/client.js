@@ -1,10 +1,12 @@
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 const TOKEN_KEY = 'shelterhub_token';
 
+// `window.localStorage`, not the bare global: Node 20.11+/22+ defines its own
+// experimental `localStorage` global that otherwise shadows jsdom's in tests.
 export const tokenStorage = {
-  get: () => localStorage.getItem(TOKEN_KEY),
-  set: (token) => localStorage.setItem(TOKEN_KEY, token),
-  clear: () => localStorage.removeItem(TOKEN_KEY),
+  get: () => window.localStorage.getItem(TOKEN_KEY),
+  set: (token) => window.localStorage.setItem(TOKEN_KEY, token),
+  clear: () => window.localStorage.removeItem(TOKEN_KEY),
 };
 
 export class ApiError extends Error {

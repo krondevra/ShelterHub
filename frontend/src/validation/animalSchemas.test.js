@@ -40,4 +40,24 @@ describe('animalSchema', () => {
     expect(values).toBeNull();
     expect(errors.shelter_id).toBeDefined();
   });
+
+  it.each([
+    ['name', 120],
+    ['breed', 120],
+    ['species', 80],
+  ])('accepts %s at exactly the backend max length of %i', (field, max) => {
+    const { values, errors } = validate(animalSchema, { ...base, [field]: 'a'.repeat(max) });
+    expect(errors).toEqual({});
+    expect(values[field]).toHaveLength(max);
+  });
+
+  it.each([
+    ['name', 120],
+    ['breed', 120],
+    ['species', 80],
+  ])('rejects %s one character over the backend max length of %i', (field, max) => {
+    const { values, errors } = validate(animalSchema, { ...base, [field]: 'a'.repeat(max + 1) });
+    expect(values).toBeNull();
+    expect(errors[field]).toBeDefined();
+  });
 });
