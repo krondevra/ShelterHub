@@ -90,7 +90,7 @@ export function AnimalForm({ mode, animal, shelters, onSubmit, onCancel }) {
           {submitting ? 'Saving…' : mode === 'edit' ? 'Save changes' : 'Add animal'}
         </button>
         {onCancel && (
-          <button type="button" onClick={onCancel} disabled={submitting}>
+          <button type="button" className="btn-secondary" onClick={onCancel} disabled={submitting}>
             Cancel
           </button>
         )}

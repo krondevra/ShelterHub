@@ -2,19 +2,30 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 // `fetcher` must be a stable function (defined with useCallback, or module-level).
 // Pass `skip: true` to avoid firing the request (e.g. while waiting on auth state).
+//
+// `loading` is only true before the first successful fetch. A later refetch
+// (e.g. after approving an application) keeps the previous `data` on screen
+// instead of replacing it with a loading state, and instead flips
+// `refreshing` to true for the duration — pages that want a subtle indicator
+// can use it, but don't have to.
 export function useQuery(fetcher, { skip = false } = {}) {
-  const [state, setState] = useState({ data: null, loading: !skip, error: null });
+  const [state, setState] = useState({ data: null, loading: !skip, refreshing: false, error: null });
   const lastRequest = useRef(0);
 
   const run = useCallback(async () => {
     const id = ++lastRequest.current;
-    setState((s) => ({ ...s, loading: true, error: null }));
+    setState((s) => ({
+      ...s,
+      loading: s.data === null,
+      refreshing: s.data !== null,
+      error: null,
+    }));
     try {
       const data = await fetcher();
-      if (id === lastRequest.current) setState({ data, loading: false, error: null });
+      if (id === lastRequest.current) setState({ data, loading: false, refreshing: false, error: null });
     } catch (e) {
       if (id === lastRequest.current) {
-        setState((s) => ({ ...s, loading: false, error: e.message }));
+        setState((s) => ({ ...s, loading: false, refreshing: false, error: e.message }));
       }
     }
   }, [fetcher]);

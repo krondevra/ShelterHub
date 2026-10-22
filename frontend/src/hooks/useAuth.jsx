@@ -5,15 +5,23 @@ import { useMutation } from './useQuery';
 
 const AuthContext = createContext(null);
 
+// `exp` is in seconds (standard JWT claim); Date.now() is in milliseconds.
 function userFromToken(token) {
   if (!token) return null;
   const payload = decodeJwt(token);
   if (!payload?.sub || !payload?.role) return null;
+  if (typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now()) return null;
   return { id: payload.sub, role: payload.role };
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => userFromToken(tokenStorage.get()));
+  const [user, setUser] = useState(() => {
+    const token = tokenStorage.get();
+    const initialUser = userFromToken(token);
+    // Token present but rejected (expired or malformed): stop carrying it around.
+    if (token && !initialUser) tokenStorage.clear();
+    return initialUser;
+  });
 
   const logout = useCallback(() => {
     tokenStorage.clear();

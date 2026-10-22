@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { AnimalCard } from './AnimalCard';
+import { AnimalCard, formatAge } from './AnimalCard';
 
 const animal = {
   id: 1,
@@ -18,7 +18,7 @@ describe('AnimalCard', () => {
     expect(screen.getByRole('heading', { name: 'Rex' })).toBeInTheDocument();
     expect(screen.getByText('Dog')).toBeInTheDocument();
     expect(screen.getByText('Labrador')).toBeInTheDocument();
-    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByText('3 years')).toBeInTheDocument();
     expect(screen.getByText('Available')).toBeInTheDocument();
   });
 
@@ -35,5 +35,32 @@ describe('AnimalCard', () => {
   it('renders no action when none is provided', () => {
     render(<AnimalCard animal={animal} />);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['dog', '🐶'],
+    ['Labrador dog', '🐶'],
+    ['cat', '🐱'],
+    ['Siamese cat', '🐱'],
+    ['rabbit', '🐾'],
+    ['', '🐾'],
+  ])('shows the %s species icon', (species, emoji) => {
+    render(<AnimalCard animal={{ ...animal, species }} />);
+    expect(screen.getByText(emoji)).toBeInTheDocument();
+  });
+});
+
+describe('formatAge', () => {
+  it('shows "Under 1 year" for age 0', () => {
+    expect(formatAge(0)).toBe('Under 1 year');
+  });
+
+  it('uses the singular for age 1', () => {
+    expect(formatAge(1)).toBe('1 year');
+  });
+
+  it('uses the plural for ages above 1', () => {
+    expect(formatAge(2)).toBe('2 years');
+    expect(formatAge(15)).toBe('15 years');
   });
 });
