@@ -172,14 +172,21 @@ constraints. Added:
 
 ### 13. Schema creation and seeding
 
-`Base.metadata.create_all()` runs on startup — the project has no migration
-tool. **If the models change after the database exists, the schema will not
-update**; drop the `pgdata` volume or add Alembic. Three demo shelters are
-inserted on startup when the `shelters` table is empty.
+The schema is managed by Alembic (`backend/migrations/`); the app no longer
+calls `create_all()` on startup. The Docker entrypoint (`backend/entrypoint.sh`)
+runs `alembic upgrade head`, then `python -m app.seed` (the three shelters,
+plus demo accounts, animals and applications when `SEED_DEMO=1`), then starts
+uvicorn. Both steps are safe to repeat. A model change needs a new migration:
+`alembic revision --autogenerate -m "..."`, reviewed by hand. A database that
+was created by the old `create_all()` startup can be adopted with
+`alembic stamp head` (or drop the `pgdata` volume).
 
-Both are temporary. Alembic migrations and a standalone seed script are planned
-(owned by DevOps) and will replace this startup hook. Existing databases
-need the new `animals.photo_path` column (see 15) until then.
+The enum columns (`animals.status`, `shelter_applications.status`) are VARCHAR
+with a CHECK constraint listing the allowed values (`create_constraint=True`;
+SQLAlchemy 2.0 no longer adds it by default).
+
+The test suite still builds its in-memory schema with `create_all()` for speed;
+`tests/test_migrations.py` checks the migrations produce the same schema.
 
 ### 14. CORS
 

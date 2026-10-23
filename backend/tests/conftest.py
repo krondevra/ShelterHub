@@ -52,9 +52,9 @@ def db(session_factory) -> Session:
 def client(session_factory):
     """HTTP client wired to the test database.
 
-    ``TestClient`` is deliberately *not* used as a context manager: that would
-    run the app lifespan, which creates tables and seeds demo data on the
-    application's own engine rather than this test's.
+    The app itself never creates tables (that's Alembic's job), so the
+    ``engine`` fixture builds the schema with ``create_all`` for speed;
+    ``test_migrations.py`` checks that the migrations produce the same schema.
     """
 
     def override_get_db():
