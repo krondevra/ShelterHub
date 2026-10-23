@@ -1,11 +1,14 @@
 """Shared pytest fixtures.
 
 Every test runs against a throwaway in-memory SQLite database -- the real
-PostgreSQL instance is never touched. The environment defaults that make that
+PostgreSQL instance is never touched. CI also runs the suite on a disposable
+PostgreSQL database by setting ``TEST_DATABASE_URL``. The environment defaults that make that
 true are set in ``tests/__init__.py``, which is imported before this module.
 """
 
 from __future__ import annotations
+
+import os
 
 import pytest
 from fastapi.testclient import TestClient
@@ -20,16 +23,21 @@ from app.models import Shelter
 
 @pytest.fixture()
 def engine():
-    """A fresh in-memory database per test.
+    """A fresh database per test: in-memory SQLite, or the empty PostgreSQL
+    database in ``TEST_DATABASE_URL`` (tables created and dropped each test).
 
     ``StaticPool`` keeps every session on the one connection, which is what
     makes ``:memory:`` visible to both the fixtures and the request handlers.
     """
-    test_engine = create_engine(
-        "sqlite+pysqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+    url = os.getenv("TEST_DATABASE_URL")
+    if url:
+        test_engine = create_engine(url)
+    else:
+        test_engine = create_engine(
+            "sqlite+pysqlite:///:memory:",
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
     Base.metadata.create_all(bind=test_engine)
     yield test_engine
     Base.metadata.drop_all(bind=test_engine)

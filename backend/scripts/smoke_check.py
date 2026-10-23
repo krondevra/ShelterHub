@@ -157,7 +157,7 @@ def main() -> int:
         animal_id = animal["id"]
         check(
             set(animal)
-            == {"id", "name", "species", "breed", "age", "status", "shelter_id"},
+            == {"id", "name", "species", "breed", "age", "status", "shelter_id", "photo_url"},
             "animal matches contract fields",
             f"-> {sorted(animal)}",
         )
