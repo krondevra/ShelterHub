@@ -68,6 +68,9 @@ def _enum_column(py_enum: type[enum.Enum], name: str) -> SAEnum:
         py_enum,
         name=name,
         native_enum=False,
+        # SQLAlchemy 2.0 no longer adds the CHECK by default; without it the
+        # database would accept any string.
+        create_constraint=True,
         validate_strings=True,
         values_callable=lambda e: [member.value for member in e],
     )
