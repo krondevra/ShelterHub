@@ -100,7 +100,7 @@ Backend settings are environment variables; see `backend/.env.example`.
 ShelterHub/
 ├── backend/          # FastAPI app, Alembic migrations, tests, entrypoint
 ├── frontend/         # React app, unit tests, Playwright tests (e2e/)
-├── docs/             # API contract, database, UML, backend decisions
+├── docs/             # API contract, database, UML, backend decisions, PRs
 ├── .github/workflows # CI
 └── docker-compose.yml
 ```
@@ -111,3 +111,4 @@ ShelterHub/
 - [Database](docs/DATABASE.md): ER diagram, tables, migrations and seed
 - [UML models](docs/UML_MODELS.md): class diagram and status lifecycles
 - [Backend decisions](docs/BACKEND_DECISIONS.md): design choices and known gaps
+- [Pull requests](docs/PULL_REQUESTS.md): every PR with its author, review and what changed
