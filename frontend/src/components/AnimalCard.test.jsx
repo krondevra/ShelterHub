@@ -73,6 +73,45 @@ describe('AnimalCard', () => {
     expect(screen.getByText('🐶')).toBeInTheDocument();
   });
 
+  it('opens the full photo and closes it with the close button', () => {
+    render(<AnimalCard animal={{ ...animal, photo_url: '/uploads/animals/1.jpg' }} />);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'View full photo of Rex' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Photo of Rex' });
+    expect(dialog.querySelector('img').src).toBe('http://localhost:8000/uploads/animals/1.jpg');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close photo' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('closes the full photo with Escape and a click on the background', () => {
+    render(<AnimalCard animal={{ ...animal, photo_url: '/uploads/animals/1.jpg' }} />);
+    const open = screen.getByRole('button', { name: 'View full photo of Rex' });
+
+    fireEvent.click(open);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    fireEvent.click(open);
+    fireEvent.click(screen.getByRole('dialog'));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('keeps the full photo open when the photo itself is clicked', () => {
+    render(<AnimalCard animal={{ ...animal, photo_url: '/uploads/animals/1.jpg' }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'View full photo of Rex' }));
+
+    fireEvent.click(screen.getByRole('dialog').querySelector('img'));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('has no view button when there is no photo', () => {
+    render(<AnimalCard animal={{ ...animal, photo_url: null }} />);
+    expect(screen.queryByRole('button', { name: /View full photo/ })).not.toBeInTheDocument();
+  });
+
   it('tries again when a failed photo is replaced by a new one', () => {
     const { rerender } = render(<AnimalCard animal={{ ...animal, photo_url: '/uploads/animals/1-old.jpg' }} />);
     fireEvent.error(screen.getByRole('img', { name: 'Photo of Rex' }));

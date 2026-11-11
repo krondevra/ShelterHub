@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { BASE_URL } from '../api/client';
+import { PhotoViewer } from './PhotoViewer';
 
 const STATUS_LABELS = {
   available: 'Available',
@@ -31,17 +32,30 @@ export function AnimalCard({ animal, action }) {
   // and should be tried again without a page reload.
   const [failedUrl, setFailedUrl] = useState(null);
   const showPhoto = animal.photo_url && animal.photo_url !== failedUrl;
+  const photoSrc = `${BASE_URL}${animal.photo_url}`;
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const closeViewer = useCallback(() => setViewerOpen(false), []);
 
   return (
     <article className="animal-card" data-testid="animal-card">
       <div className={`animal-visual animal-visual-${category}`}>
         {showPhoto ? (
-          <img
-            src={`${BASE_URL}${animal.photo_url}`}
-            alt={`Photo of ${animal.name}`}
-            className="animal-visual-photo"
-            onError={() => setFailedUrl(animal.photo_url)}
-          />
+          <button
+            type="button"
+            className="animal-visual-open"
+            onClick={() => setViewerOpen(true)}
+            aria-label={`View full photo of ${animal.name}`}
+          >
+            <img
+              src={photoSrc}
+              alt={`Photo of ${animal.name}`}
+              className="animal-visual-photo"
+              onError={() => setFailedUrl(animal.photo_url)}
+            />
+            <span className="animal-visual-zoom" aria-hidden="true">
+              ⤢
+            </span>
+          </button>
         ) : (
           <span className="animal-visual-icon" aria-hidden="true">
             {emoji}
@@ -71,6 +85,9 @@ export function AnimalCard({ animal, action }) {
         </dl>
         {action && <div className="animal-card-action">{action}</div>}
       </div>
+      {viewerOpen && showPhoto && (
+        <PhotoViewer src={photoSrc} alt={`Photo of ${animal.name}`} onClose={closeViewer} />
+      )}
     </article>
   );
 }

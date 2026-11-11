@@ -231,7 +231,8 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 96px;
+  /* Same 4:3 box for photos and icons, so every card in a row lines up. */
+  aspect-ratio: 4 / 3;
   background: var(--icon-bg-other);
   overflow: hidden;
 }
@@ -240,6 +241,80 @@ button:disabled {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Animal photos usually have the head in the upper part. */
+  object-position: center 30%;
+}
+
+/* The photo is a button that opens the full image. Undo the shared button
+   look so only the photo shows. */
+.animal-visual-open,
+.animal-visual-open:hover:not(:disabled) {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.animal-visual-zoom {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  width: 1.9rem;
+  height: 1.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 1rem;
+}
+
+.animal-visual-open:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: -3px;
+}
+
+/* Full photo overlay */
+.photo-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.85);
+  cursor: zoom-out;
+}
+
+.photo-viewer-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+  cursor: default;
+}
+
+.photo-viewer-close,
+.photo-viewer-close:hover:not(:disabled) {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.6rem;
+  line-height: 1;
 }
 
 .animal-visual-dog {
@@ -251,7 +326,7 @@ button:disabled {
 }
 
 .animal-visual-icon {
-  font-size: 2.5rem;
+  font-size: 4rem;
   line-height: 1;
 }
 
@@ -281,14 +356,18 @@ button:disabled {
   gap: 0.4rem 0.75rem;
 }
 
+/* Label above value, so long breeds wrap cleanly instead of squeezing the label. */
 .animal-card-details div {
   display: flex;
-  justify-content: space-between;
-  border-bottom: 1px dashed var(--color-border);
+  flex-direction: column;
+  min-width: 0;
 }
 
 .animal-card-details dt {
   color: var(--color-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .animal-card-details dd {
@@ -402,9 +481,15 @@ form select {
   flex-wrap: wrap;
 }
 
+/* A <label> styled as a button: the base button rules above only apply to
+   <button>, so the shape has to be repeated here. */
 .photo-control-pick {
+  display: inline-block;
   cursor: pointer;
   font-size: 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.3rem 0.7rem;
 }
 
 /* Visually hidden but still reachable by keyboard/label click. */
