@@ -1,11 +1,10 @@
 # Pull requests
 
 All work reached `main` through pull requests with a review, except a few small
-contract updates. The PRs were made in the original repository, which is now kept
-private as an archive. This repository has the same history: up to commit
-`2f720fa`, every merge commit `Merge pull request #N` on `main` is one of the
-PRs #1-#11 below. PRs opened in this repository start again from #1, see
-[Pull requests in this repository](#pull-requests-in-this-repository).
+contract updates. The table below lists PRs #1-#11 from the three sprints; each
+one is a `Merge pull request #N` commit on `main`, up to commit `2f720fa`. The
+PRs after that are numbered again from #1, see
+[Final pull requests](#final-pull-requests).
 
 | # | Title | Author | Reviewed by | Opened | Merged |
 |---|-------|--------|-------------|--------|--------|
@@ -103,14 +102,13 @@ Compose stack.
 `docs/DATABASE.md` with the ER diagram and table descriptions, and the README
 sections on setup, demo accounts, tests and configuration.
 
-## Pull requests in this repository
-
-These have their own pages here, with CI results.
+## Final pull requests
 
 | # | Title | Author | Merged |
 |---|-------|--------|--------|
 | 1 | Add team and roles to README | krondevra | 2026-11-11 |
 | 2 | Add full photo view and tidy up animal cards | krondevra | 2026-11-11 |
+| 3 | Add photos to the demo animals | krondevra | 2026-11-11 |
 
 **#1 Team and roles:** a README section on who is in the team and what each
 person built.
@@ -119,3 +117,7 @@ person built.
 picture area is 4:3 instead of a thin strip, the Species / Breed / Age labels
 sit above the values, and Choose photo in the staff panel looks like a button.
 4 new frontend tests.
+
+**#3 Demo photos:** each demo animal gets a photo of its breed from Wikimedia
+Commons (free licenses, credits in `backend/app/demo_photos/CREDITS.md`). The seed
+copies them into the upload folder like normal uploads. 3 new backend tests.
