@@ -119,5 +119,7 @@ alembic check                                   # fails if the models and migrat
 ```
 
 In Docker, `backend/entrypoint.sh` runs the upgrade and the seed on every start
-(`SEED_DEMO=1` in `docker-compose.yml` adds the demo data once). CI checks that the
+(`SEED_DEMO=1` in `docker-compose.yml` adds the demo data once). The demo animals
+get photos from `backend/app/demo_photos/`, copied into the upload folder like
+normal uploads, so staff can replace or remove them. CI checks that the
 migrations apply on PostgreSQL, match the models and roll back.
