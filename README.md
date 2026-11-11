@@ -16,6 +16,31 @@ shelter staff manage animals (with photos) and approve or reject applications.
 - **Orchestration:** Docker Compose
 - **Tests and CI:** pytest, Vitest + React Testing Library, Playwright, GitHub Actions
 
+## Team and roles
+
+| Member | GitHub | Role |
+|---|---|---|
+| Nikita | [gospacho19](https://github.com/gospacho19) | Backend |
+| Vika | [bebrraa](https://github.com/bebrraa) | Frontend |
+| Devids | [krondevra](https://github.com/krondevra) | DevOps and QA |
+
+**Backend (Nikita):** SQLAlchemy models with `Staff` and `Adopter` sharing one
+`users` table, JWT login with bcrypt and role checks, the routes from the API
+contract, the adoption status flow, input validation that returns 422 instead of
+500, and the backend pytest suite. Wrote the UML models and most of the backend
+decisions doc.
+
+**Frontend (Vika):** the React app: routing, login and registration, animal
+browsing with the shelter filter, the adoption flow, and the staff panel for
+animals, photos and applications. Hooks for the API, Zod validation that matches
+the backend rules, UI polish for phones, and the Vitest tests.
+
+**DevOps and QA (Devids):** project setup, Docker Compose and the API contract,
+the database schema and ER diagram, Alembic migrations, the seed script with
+demo data, the GitHub Actions pipeline, PostgreSQL and Docker smoke tests, the
+Playwright browser tests, and the photo upload endpoints. Reviewed the pull
+requests and kept `main` protected.
+
 ## Run with Docker
 
 Prerequisites: Docker and Docker Compose.
