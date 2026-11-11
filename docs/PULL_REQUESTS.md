@@ -111,6 +111,7 @@ These have their own pages here, with CI results.
 |---|-------|--------|--------|
 | 1 | Add team and roles to README | krondevra | 2026-11-11 |
 | 2 | Add full photo view and tidy up animal cards | krondevra | 2026-11-11 |
+| 3 | Add photos to the demo animals | krondevra | 2026-11-11 |
 
 **#1 Team and roles:** a README section on who is in the team and what each
 person built.
@@ -119,3 +120,7 @@ person built.
 picture area is 4:3 instead of a thin strip, the Species / Breed / Age labels
 sit above the values, and Choose photo in the staff panel looks like a button.
 4 new frontend tests.
+
+**#3 Demo photos:** each demo animal gets a photo of its breed from Wikimedia
+Commons (free licenses, credits in `backend/app/demo_photos/CREDITS.md`). The seed
+copies them into the upload folder like normal uploads. 3 new backend tests.
