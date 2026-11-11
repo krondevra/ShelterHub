@@ -2,7 +2,7 @@
 
 The contract defines no endpoint that creates a shelter, yet ``POST /animals``
 requires a ``shelter_id``, so the shelters are always seeded. ``--demo`` adds
-demo accounts, animals and applications for trying the app out.
+demo accounts, animals (with photos) and applications for trying the app out.
 
 Run after the migrations (the Docker entrypoint does both):
 
@@ -15,6 +15,9 @@ Both are safe to run again: existing data is left alone.
 from __future__ import annotations
 
 import argparse
+import shutil
+from pathlib import Path
+from uuid import uuid4
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -31,6 +34,7 @@ from .models import (
     User,
 )
 from .security import hash_password
+from .uploads import ANIMAL_PHOTO_DIR, ensure_upload_dirs
 
 DEMO_SHELTERS: tuple[tuple[str, str], ...] = (
     ("Paws Haven", "Riga"),
@@ -66,6 +70,23 @@ DEMO_ANIMALS: tuple[tuple[str, str, str, int, str], ...] = (
     ("Buddy", "Dog", "Golden Retriever", 11, "Happy Tails Rescue"),
 )
 
+# One photo per demo animal, named after it (max.jpg, ...). Sources and
+# licenses are in demo_photos/CREDITS.md.
+DEMO_PHOTO_DIR = Path(__file__).resolve().parent / "demo_photos"
+
+
+def add_demo_photo(animal: Animal) -> None:
+    """Copy the animal's demo photo into the upload folder, named the same way
+    as an uploaded one, so it can be replaced or removed like any other photo.
+    Skipped if there is no photo for that name."""
+    source = DEMO_PHOTO_DIR / f"{animal.name.lower()}.jpg"
+    if not source.is_file():
+        return
+    ensure_upload_dirs()
+    file_name = f"{animal.id}-{uuid4().hex}.jpg"
+    shutil.copyfile(source, ANIMAL_PHOTO_DIR / file_name)
+    animal.photo_path = file_name
+
 
 def seed_demo(db: Session) -> bool:
     """Add demo accounts, animals and applications. Returns False (and changes
@@ -90,6 +111,9 @@ def seed_demo(db: Session) -> bool:
         for name, species, breed, age, shelter in DEMO_ANIMALS
     }
     db.add_all(animals.values())
+    db.flush()  # gives the animals their ids, used in the photo file names
+    for animal in animals.values():
+        add_demo_photo(animal)
 
     animals["Max"].status = AnimalStatus.ADOPTED
     animals["Bella"].status = AnimalStatus.PENDING

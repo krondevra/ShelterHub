@@ -67,6 +67,9 @@ plus demo data (`backend/entrypoint.sh`). Demo accounts, all with the password
 | `anna@example.com` | adopter |
 | `janis@example.com` | adopter |
 
+The demo animals come with photos from Wikimedia Commons (free licenses, see
+`backend/app/demo_photos/CREDITS.md`).
+
 Set `SEED_DEMO=0` to start without the demo data. Uploaded photos are kept in the
 `uploads` volume, the database in `pgdata` (`docker compose down -v` removes both).
 

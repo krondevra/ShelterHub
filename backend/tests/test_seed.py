@@ -5,7 +5,16 @@ from __future__ import annotations
 from sqlalchemy import func, select
 
 from app.models import Animal, AnimalStatus, ShelterApplication, User
-from app.seed import DEMO_ADOPTERS, DEMO_ANIMALS, DEMO_PASSWORD, DEMO_STAFF, seed_demo, seed_shelters
+from app.seed import (
+    DEMO_ADOPTERS,
+    DEMO_ANIMALS,
+    DEMO_PASSWORD,
+    DEMO_PHOTO_DIR,
+    DEMO_STAFF,
+    seed_demo,
+    seed_shelters,
+)
+from app.uploads import ANIMAL_PHOTO_DIR
 from tests.conftest import login_headers
 
 
@@ -55,3 +64,38 @@ def test_demo_accounts_can_log_in(client, db):
 
     staff = login_headers(client, DEMO_STAFF, DEMO_PASSWORD)
     assert len(client.get("/applications", headers=staff).json()) == 5
+
+
+def test_every_demo_animal_has_a_photo_file(db):
+    for name, *_ in DEMO_ANIMALS:
+        assert (DEMO_PHOTO_DIR / f"{name.lower()}.jpg").is_file(), name
+    assert (DEMO_PHOTO_DIR / "CREDITS.md").is_file()
+
+
+def test_demo_seed_adds_photos_that_are_served(client, db):
+    seed_shelters(db)
+    seed_demo(db)
+
+    animals = client.get("/animals").json()
+    assert len(animals) == len(DEMO_ANIMALS)
+    for animal in animals:
+        photo_url = animal["photo_url"]
+        assert photo_url.startswith(f"/uploads/animals/{animal['id']}-"), animal["name"]
+        assert (ANIMAL_PHOTO_DIR / photo_url.rsplit("/", 1)[1]).is_file()
+        response = client.get(photo_url)
+        assert response.status_code == 200
+        assert response.content[:3] == b"\xff\xd8\xff"  # JPEG
+
+
+def test_demo_photo_can_be_removed_like_an_uploaded_one(client, db):
+    seed_shelters(db)
+    seed_demo(db)
+    staff = login_headers(client, DEMO_STAFF, DEMO_PASSWORD)
+    animal = client.get("/animals").json()[0]
+    stored = ANIMAL_PHOTO_DIR / animal["photo_url"].rsplit("/", 1)[1]
+
+    response = client.delete(f"/animals/{animal['id']}/photo", headers=staff)
+
+    assert response.status_code == 200
+    assert response.json()["photo_url"] is None
+    assert not stored.exists()
