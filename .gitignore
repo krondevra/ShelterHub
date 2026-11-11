@@ -49,6 +49,3 @@ Thumbs.db
 # --- Misc ---
 .tmp/
 *.log
-
-# --- Claude Code ---
-.claude/
