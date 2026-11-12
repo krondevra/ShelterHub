@@ -1,11 +1,10 @@
 # Pull requests
 
 All work reached `main` through pull requests with a review, except a few small
-contract updates. The PRs were made in the original repository, which is now kept
-private as an archive. This repository has the same history: up to commit
-`2f720fa`, every merge commit `Merge pull request #N` on `main` is one of the
-PRs #1-#11 below. PRs opened in this repository start again from #1, see
-[Pull requests in this repository](#pull-requests-in-this-repository).
+contract updates. The table below lists PRs #1-#11 from the three sprints; each
+one is a `Merge pull request #N` commit on `main`, up to commit `2f720fa`. The
+PRs after that are numbered again from #1, see
+[Final pull requests](#final-pull-requests).
 
 | # | Title | Author | Reviewed by | Opened | Merged |
 |---|-------|--------|-------------|--------|--------|
@@ -103,9 +102,7 @@ Compose stack.
 `docs/DATABASE.md` with the ER diagram and table descriptions, and the README
 sections on setup, demo accounts, tests and configuration.
 
-## Pull requests in this repository
-
-These have their own pages here, with CI results.
+## Final pull requests
 
 | # | Title | Author | Merged |
 |---|-------|--------|--------|
