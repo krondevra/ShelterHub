@@ -8,6 +8,10 @@ with FastAPI (backend), React (frontend), and PostgreSQL (database).
 Visitors browse the animals of three shelters, adopters apply to adopt, and
 shelter staff manage animals (with photos) and approve or reject applications.
 
+<p align="center">
+  <img src="docs/demo.gif" alt="Demo: browsing animals, opening a photo, applying as an adopter and approving as staff">
+</p>
+
 ## Stack
 
 - **Backend:** FastAPI, SQLAlchemy, Alembic, PostgreSQL driver (psycopg2)
